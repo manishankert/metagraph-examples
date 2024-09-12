@@ -25,6 +25,8 @@ object ML0Validator {
   def make[F[_] : Async : Hasher]: ML0Validator[F, Signed[TX], DS] =
     new ML0Validator[F, Signed[TX], DS] {
 
-      override def verify(state: DS, signedUpdate: Signed[TX]): F[DataApplicationValidationErrorOr[Unit]] = ???
+      override def verify(state: DS, signedUpdate: Signed[TX]): F[DataApplicationValidationErrorOr[Unit]] = update match {
+        case u: Updates.CreateTask   => ().validNec.pure[F]
+      }
     }
 }

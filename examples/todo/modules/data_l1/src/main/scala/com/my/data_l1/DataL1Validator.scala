@@ -21,6 +21,8 @@ object DataL1Validator {
   def make[F[_]: Async: Hasher]: DataL1Validator[F, TodoUpdate, OnChain] =
     new DataL1Validator[F, TodoUpdate, OnChain] {
 
-      override def verify(state: OnChain, update: TodoUpdate): F[DataApplicationValidationErrorOr[Unit]] = ???
+      override def verify(state: OnChain, update: TodoUpdate): F[DataApplicationValidationErrorOr[Unit]] = update match {
+        case u: Updates.CreateTask   => ().validNec.pure[F]
+      }
     }
 }
