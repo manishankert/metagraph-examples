@@ -26,7 +26,42 @@ object StateUpdateCombiner {
   def make[F[_]: Async: SecurityProvider: Hasher]: StateUpdateCombiner[F, TX, DS] =
     new StateUpdateCombiner[F, TX, DS] {
 
-      override def insert(state: DS, signedUpdate: Signed[TX])(implicit ctx: L0NodeContext[F]): F[DS] = ???
+      override def insert(state: DS, signedUpdate: Signed[TX])(implicit ctx: L0NodeContext[F]): F[DS] =
+        signedUpdate.value match {
+          case u: Updates.CreateTask   => createTask(Signed(u, signedUpdate.proofs), state, ctx)
+        }
+
+      private def createTask(update: Signed[Updates.CreateTask], inState: DS, ctx: L0NodeContext[F]): F[DS] =
+        for {
+          currentOrdinal <- ctx.getLastCurrencySnapshot
+            .map(_.map(_.signed.value.ordinal).getOrElse(SnapshotOrdinal.MinValue))
+            .map(_.next)
+
+          _record = TaskRecord(
+            modelID = update.modelID,
+            creationOrdinal = currentOrdinal,
+            lastUpdatedOrdinal = currentOrdinal,
+            model = update.model,
+            typeOfmodel = update.typeOfmodel,
+            primaryUseCase = update.primaryUseCase,
+            keyFeatures = update.keyFeatures,
+            exampleOfApplication  = update.exampleOfApplication,
+            timeStampCreation = update.timeStampCreation,
+            timeStampCompletion = update.timeStampCompletion,
+            timeStampUpdate = update.timeStampUpdate,
+            ageOfModel = update.ageOfModel,
+            versionControl = update.versionControl,
+            watermarked = update.watermarked
+          )
+
+          onchain = inState.onChain
+            .focus(_.activeTasks)
+            .modify(_.updated(update.modelID, _record))
+
+          calculated = inState.calculated
+
+        } yield DataState(onchain, calculated)
+
 
     }
 }

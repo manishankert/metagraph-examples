@@ -13,15 +13,6 @@ import io.circe.generic.extras.Configuration
 import io.circe.generic.extras.semiauto.{deriveConfiguredDecoder, deriveConfiguredEncoder}
 import io.circe.{Decoder, Encoder}
 
-//@derive(decoder, encoder)
-//final case class TaskRecord(
-//  id:                 String,
-//  creationOrdinal:    SnapshotOrdinal,
-//  lastUpdatedOrdinal: SnapshotOrdinal,
-//  dueDateEpochMilli:  Long,
-//  status:             TaskStatus,
-//  reporter:           Address
-//)
 
 @derive(decoder, encoder)
 final case class TaskRecord(
