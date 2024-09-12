@@ -18,7 +18,10 @@ import org.http4s.HttpRoutes
 class DataL1CustomRoutes[F[_]: Async: JsonSerializer](implicit context: L1NodeContext[F])
     extends MetagraphPublicRoutes[F] {
 
-  protected val routes: HttpRoutes[F] = HttpRoutes.empty
+  protected val routes: HttpRoutes[F] = HttpRoutesof[F] {
+    case GET -> Root / "dump" / "onchain" =>
+      context.getOnChainState.flatMap(prepareResponse(_))
+  }
 }
 
 object DataL1CustomRoutes {
